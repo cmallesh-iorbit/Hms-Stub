@@ -485,7 +485,7 @@ hapi:
     #     host: google.com
     #     port:
     #     username:
-    #     password:
+    #     password:do
     #     auth:
     #       startTlsEnable:
     #       startTlsRequired:

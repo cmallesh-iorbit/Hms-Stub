@@ -11,6 +11,8 @@ While this project shows how you can use many parts of the HAPI FHIR framework t
 3) The internal topic cache used by subscriptions in HAPI FHIR are not shared across multiple instances as the [default supplied implementation is in-mem](https://github.com/hapifhir/hapi-fhir/blob/master/hapi-fhir-jpaserver-subscription/src/main/java/ca/uhn/fhir/jpa/topic/ActiveSubscriptionTopicCache.java)
 4) The internal message broker channel in HAPI FHIR is not shared across multiple instances as the [default supplied implementation is in-mem](https://github.com/hapifhir/hapi-fhir/blob/master/hapi-fhir-storage/src/main/java/ca/uhn/fhir/jpa/subscription/channel/api/IChannelFactory.java). This impacts the use of modules listed [here](https://smilecdr.com/docs/installation/message_broker.html#modules-dependent-on-message-brokers)
 
+For this repo specifically, see [docs/api-security-readme.md](docs/api-security-readme.md) for a concrete plan to add login and token-based API security.
+
 Need Help? Please see: https://github.com/hapifhir/hapi-fhir/wiki/Getting-Help
 
 ## Prerequisites

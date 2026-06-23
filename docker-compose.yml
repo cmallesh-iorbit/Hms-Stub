@@ -10,7 +10,7 @@ services:
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.postgresql.Driver"
       HIBERNATE_DIALECT: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect
     ports:
-      - "8080:8080"
+      - "8085:8080"
     # Uncomment to enable periodic health checks.
     # Can also be run manually: docker exec hapi-fhir-jpaserver-start java -cp /app HealthCheck
     # healthcheck:
@@ -26,6 +26,10 @@ services:
     image: postgres:16-alpine
     container_name: hapi-fhir-postgres
     restart: always
+
+    ports:
+      - "5433:5432"
+
     environment:
       POSTGRES_DB: "hapi"
       POSTGRES_USER: "admin"
