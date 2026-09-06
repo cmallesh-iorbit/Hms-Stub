@@ -1,0 +1,1930 @@
+{
+ "info": {
+  "_postman_id": "955c0451-9b87-49ff-8c10-d772c8d62ef1",
+  "name": "HAPI FHIR R4 - Core APIs",
+  "description": "Patient, Practitioner (Doctor/Nurse), Encounter, Appointment APIs for HAPI FHIR JPA Server R4. Base URL: http://localhost:8080/fhir\n\nAUTH: Protected by simple Bearer-token auth. Run 'Auth > Login' first; its script stores the token in {{token}}. The collection sends 'Authorization: Bearer {{token}}' on every request automatically.",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+  "_exporter_id": "46581010"
+ },
+ "item": [
+  {
+   "name": "Auth",
+   "description": "Login to obtain a Bearer token (auto-stored in {{token}}), logout to revoke, and a no-token 401 check.",
+   "item": [
+    {
+     "name": "Login (get token)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+         "var b = pm.response.json();",
+         "pm.collectionVariables.set('token', b.token);",
+         "pm.test('token returned', function () { pm.expect(b.token).to.be.a('string').and.not.empty; });",
+         "console.log('Stored token:', b.token);"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "auth": {
+       "type": "noauth"
+      },
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+      },
+      "url": {
+       "raw": "{{serverUrl}}/auth/login",
+       "host": [
+        "{{serverUrl}}"
+       ],
+       "path": [
+        "auth",
+        "login"
+       ]
+      }
+     }
+    },
+    {
+     "name": "Login - bad credentials (expect 401)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "auth": {
+       "type": "noauth"
+      },
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"wrong\"\n}"
+      },
+      "url": {
+       "raw": "{{serverUrl}}/auth/login",
+       "host": [
+        "{{serverUrl}}"
+       ],
+       "path": [
+        "auth",
+        "login"
+       ]
+      }
+     }
+    },
+    {
+     "name": "Logout (revoke token)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('204 No Content', function () { pm.response.to.have.status(204); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "method": "POST",
+      "header": [],
+      "url": {
+       "raw": "{{serverUrl}}/auth/logout",
+       "host": [
+        "{{serverUrl}}"
+       ],
+       "path": [
+        "auth",
+        "logout"
+       ]
+      }
+     }
+    },
+    {
+     "name": "Get Patient - NO token (expect 401)",
+     "event": [
+      {
+       "listen": "test",
+       "script": {
+        "type": "text/javascript",
+        "exec": [
+         "pm.test('401 Unauthorized', function () { pm.response.to.have.status(401); });"
+        ]
+       }
+      }
+     ],
+     "request": {
+      "auth": {
+       "type": "noauth"
+      },
+      "method": "GET",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/Patient",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Patient",
+   "item": [
+    {
+     "name": "Create Patient",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "If-None-Exist",
+        "value": "identifier=MRN-002",
+        "type": "text"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n    \"resourceType\": \"Patient\",\n    \"identifier\": [\n        {\n            \"system\": \"http://hospital.org/mrn\",\n            \"value\": \"MRN-004\"\n        }\n    ],\n    \"active\": true,\n    \"name\": [\n        {\n            \"use\": \"official\",\n            \"family\": \"Kiran\",\n            \"given\": [\n                \"Kohli\"\n            ]\n        }\n    ],\n    \"telecom\": [\n        {\n            \"system\": \"phone\",\n            \"value\": \"9876543220\",\n            \"use\": \"mobile\"\n        },\n        {\n            \"system\": \"email\",\n            \"value\": \"rahulkk.sharmaan@example.com\",\n            \"use\": \"home\"\n        }\n    ],\n    \"gender\": \"male\",\n    \"birthDate\": \"1990-05-15\",\n    \"address\": [\n        {\n            \"use\": \"home\",\n            \"line\": [\n                \"123 MG Road\"\n            ],\n            \"city\": \"Bangalore\",\n            \"state\": \"Karnataka\",\n            \"postalCode\": \"560001\",\n            \"country\": \"IN\"\n        }\n    ]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Patient",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get Patient by ID",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Patient/{{patientId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient",
+        "{{patientId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Update Patient",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Patient\",\n  \"id\": \"{{patientId}}\",\n  \"active\": true,\n  \"name\": [{\n    \"use\": \"official\",\n    \"family\": \"Sharma\",\n    \"given\": [\"Rahul Kumar\"]\n  }],\n  \"gender\": \"male\",\n  \"birthDate\": \"1990-05-15\"\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Patient/{{patientId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient",
+        "{{patientId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Delete Patient",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/Patient/{{patientId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient",
+        "{{patientId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Patient by Name",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Patient?name=Rahul",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient"
+       ],
+       "query": [
+        {
+         "key": "name",
+         "value": "Rahul"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Patient by Identifier (MRN)",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Patient?identifier=MRN-001",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient"
+       ],
+       "query": [
+        {
+         "key": "identifier",
+         "value": "MRN-001"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Patient by Birthdate & Gender",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Patient?birthdate=1990-05-15&gender=male",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient"
+       ],
+       "query": [
+        {
+         "key": "birthdate",
+         "value": "1990-05-15"
+        },
+        {
+         "key": "gender",
+         "value": "male"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get Patient History",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Patient/{{patientId}}/_history",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient",
+        "{{patientId}}",
+        "_history"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get All Patients",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Patient?_count=20&_sort=-_lastUpdated",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Patient"
+       ],
+       "query": [
+        {
+         "key": "_count",
+         "value": "20"
+        },
+        {
+         "key": "_sort",
+         "value": "-_lastUpdated"
+        }
+       ]
+      }
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Practitioner (Doctor / Nurse)",
+   "item": [
+    {
+     "name": "Create Practitioner (Doctor)",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Practitioner\",\n  \"identifier\": [{\n    \"system\": \"http://hospital.org/doctor-id\",\n    \"value\": \"DOC-001\"\n  }],\n  \"active\": true,\n  \"name\": [{\n    \"use\": \"official\",\n    \"family\": \"Mehta\",\n    \"given\": [\"Priyansh\"],\n    \"prefix\": [\"Dr.\"]\n  }],\n  \"telecom\": [{\n    \"system\": \"phone\",\n    \"value\": \"9123456788\",\n    \"use\": \"work\"\n  },\n{\n    \"system\": \"email\",\n    \"value\": \"Mehta.sharmaan@example.com\",\n    \"use\": \"home\"\n    }],\n  \"gender\": \"female\",\n  \"qualification\": [{\n    \"code\": {\n      \"coding\": [{\n        \"system\": \"http://terminology.hl7.org/CodeSystem/v2-0360\",\n        \"code\": \"MD\",\n        \"display\": \"Doctor of Medicine\"\n      }]\n    }\n  }]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Practitioner",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Practitioner"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create Practitioner (Nurse)",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Practitioner\",\n  \"identifier\": [{\n    \"system\": \"http://hospital.org/nurse-id\",\n    \"value\": \"NRS-001\"\n  }],\n  \"active\": true,\n  \"name\": [{\n    \"use\": \"official\",\n    \"family\": \"Patel\",\n    \"given\": [\"Anita\"],\n    \"prefix\": [\"RN\"]\n  }],\n  \"telecom\": [{\n    \"system\": \"phone\",\n    \"value\": \"8073491163\",\n    \"use\": \"work\"\n  },\n{\n    \"system\": \"email\",\n    \"value\": \"patel.sharmaan@example.com\",\n    \"use\": \"home\"\n    }],\n  \"gender\": \"female\",\n  \"qualification\": [{\n    \"code\": {\n      \"coding\": [{\n        \"system\": \"http://terminology.hl7.org/CodeSystem/v2-0360\",\n        \"code\": \"RN\",\n        \"display\": \"Registered Nurse\"\n      }]\n    }\n  }]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Practitioner",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Practitioner"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get Practitioner by ID",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Practitioner/{{practitionerId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Practitioner",
+        "{{practitionerId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Update Practitioner",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Practitioner\",\n  \"id\": \"{{practitionerId}}\",\n  \"active\": true,\n  \"name\": [{\n    \"use\": \"official\",\n    \"family\": \"Mehta\",\n    \"given\": [\"Priya S.\"],\n    \"prefix\": [\"Dr.\"]\n  }]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Practitioner/{{practitionerId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Practitioner",
+        "{{practitionerId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Practitioner by Name",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Practitioner?name=Mehta",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Practitioner"
+       ],
+       "query": [
+        {
+         "key": "name",
+         "value": "Mehta"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Practitioner by Identifier",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Practitioner?identifier=DOC-001",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Practitioner"
+       ],
+       "query": [
+        {
+         "key": "identifier",
+         "value": "DOC-001"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Delete Practitioner",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/Practitioner/{{practitionerId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Practitioner",
+        "{{practitionerId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get All Practitioners",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Practitioner?_count=20",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Practitioner"
+       ],
+       "query": [
+        {
+         "key": "_count",
+         "value": "20"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create PractitionerRole",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"PractitionerRole\",\n  \"active\": true,\n  \"practitioner\": {\n    \"reference\": \"Practitioner/{{practitionerId}}\"\n  },\n  \"code\": [{\n    \"coding\": [{\n      \"system\": \"http://snomed.info/sct\",\n      \"code\": \"309343006\",\n      \"display\": \"Doctor\"\n    }]\n  }],\n  \"specialty\": [{\n    \"coding\": [{\n      \"system\": \"http://snomed.info/sct\",\n      \"code\": \"394814009\",\n      \"display\": \"ENT Specialist\"\n    }]\n  }]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/PractitionerRole",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "PractitionerRole"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get PractitionerRole",
+     "request": {
+      "method": "GET",
+      "header": []
+     },
+     "response": []
+    },
+    {
+     "name": "New Request",
+     "request": {
+      "method": "GET",
+      "header": []
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Encounter",
+   "item": [
+    {
+     "name": "Create Encounter",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Encounter\",\n  \"status\": \"in-progress\",\n  \"class\": {\n    \"system\": \"http://terminology.hl7.org/CodeSystem/v3-ActCode\",\n    \"code\": \"IMP\",\n    \"display\": \"inpatient encounter\"\n  },\n  \"type\": [{\n    \"coding\": [{\n      \"system\": \"http://snomed.info/sct\",\n      \"code\": \"11429006\",\n      \"display\": \"Consultation\"\n    }]\n  }],\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"participant\": [{\n    \"type\": [{\n      \"coding\": [{\n        \"system\": \"http://terminology.hl7.org/CodeSystem/v3-ParticipationType\",\n        \"code\": \"ATND\",\n        \"display\": \"attender\"\n      }]\n    }],\n    \"individual\": {\n      \"reference\": \"Practitioner/{{practitionerId}}\"\n    }\n  }],\n  \"period\": {\n    \"start\": \"2024-06-16T08:00:00+05:30\"\n  },\n  \"reasonCode\": [{\n    \"coding\": [{\n      \"system\": \"http://snomed.info/sct\",\n      \"code\": \"386661006\",\n      \"display\": \"Fever\"\n    }]\n  }]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Encounter",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Encounter"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get Encounter by ID",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Encounter/{{encounterId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Encounter",
+        "{{encounterId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Update Encounter (Finished)",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Encounter\",\n  \"id\": \"{{encounterId}}\",\n  \"status\": \"finished\",\n  \"class\": {\n    \"system\": \"http://terminology.hl7.org/CodeSystem/v3-ActCode\",\n    \"code\": \"IMP\",\n    \"display\": \"inpatient encounter\"\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"period\": {\n    \"start\": \"2024-06-16T08:00:00+05:30\",\n    \"end\": \"2024-06-16T10:00:00+05:30\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Encounter/{{encounterId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Encounter",
+        "{{encounterId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Encounter by Patient",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Encounter?patient={{patientId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Encounter"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Encounter by Status",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Encounter?status=in-progress",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Encounter"
+       ],
+       "query": [
+        {
+         "key": "status",
+         "value": "in-progress"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Encounter by Practitioner",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Encounter?practitioner={{practitionerId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Encounter"
+       ],
+       "query": [
+        {
+         "key": "practitioner",
+         "value": "{{practitionerId}}"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Encounter by Date Range",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Encounter?date=ge2024-06-01&date=le2024-06-30",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Encounter"
+       ],
+       "query": [
+        {
+         "key": "date",
+         "value": "ge2024-06-01"
+        },
+        {
+         "key": "date",
+         "value": "le2024-06-30"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Delete Encounter",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/Encounter/{{encounterId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Encounter",
+        "{{encounterId}}"
+       ]
+      }
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Appointment",
+   "item": [
+    {
+     "name": "Create Appointment",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Appointment\",\n  \"status\": \"booked\",\n  \"serviceType\": [{\n    \"coding\": [{\n      \"system\": \"http://snomed.info/sct\",\n      \"code\": \"11429006\",\n      \"display\": \"Consultation\"\n    }]\n  }],\n  \"specialty\": [{\n    \"coding\": [{\n      \"system\": \"http://snomed.info/sct\",\n      \"code\": \"394814009\",\n      \"display\": \"General practice\"\n    }]\n  }],\n  \"appointmentType\": {\n    \"coding\": [{\n      \"system\": \"http://terminology.hl7.org/CodeSystem/v2-0276\",\n      \"code\": \"ROUTINE\",\n      \"display\": \"Routine appointment\"\n    }]\n  },\n  \"reasonCode\": [{\n    \"coding\": [{\n      \"system\": \"http://snomed.info/sct\",\n      \"code\": \"386661006\",\n      \"display\": \"Fever\"\n    }]\n  }],\n  \"start\": \"2024-06-20T09:00:00+05:30\",\n  \"end\": \"2024-06-20T09:30:00+05:30\",\n  \"comment\": \"First visit. Patient has had fever for 3 days.\",\n  \"participant\": [\n    {\n      \"actor\": {\n        \"reference\": \"Patient/{{patientId}}\",\n        \"display\": \"Rahul Sharma\"\n      },\n      \"required\": \"required\",\n      \"status\": \"accepted\"\n    },\n    {\n      \"actor\": {\n        \"reference\": \"Practitioner/{{practitionerId}}\",\n        \"display\": \"Dr. Priya Mehta\"\n      },\n      \"required\": \"required\",\n      \"status\": \"accepted\"\n    }\n  ]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Appointment",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Appointment"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get Appointment by ID",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Appointment/{{appointmentId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Appointment",
+        "{{appointmentId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Update Appointment (Cancel)",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Appointment\",\n  \"id\": \"{{appointmentId}}\",\n  \"status\": \"cancelled\",\n  \"start\": \"2024-06-20T09:00:00+05:30\",\n  \"end\": \"2024-06-20T09:30:00+05:30\",\n  \"cancelationReason\": {\n    \"coding\": [{\n      \"system\": \"http://terminology.hl7.org/CodeSystem/appointment-cancellation-reason\",\n      \"code\": \"pat\",\n      \"display\": \"Patient\"\n    }]\n  },\n  \"participant\": [\n    {\n      \"actor\": { \"reference\": \"Patient/{{patientId}}\" },\n      \"required\": \"required\",\n      \"status\": \"declined\"\n    },\n    {\n      \"actor\": { \"reference\": \"Practitioner/{{practitionerId}}\" },\n      \"required\": \"required\",\n      \"status\": \"declined\"\n    }\n  ]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Appointment/{{appointmentId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Appointment",
+        "{{appointmentId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Appointment by Patient",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Appointment?patient={{patientId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Appointment"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Appointment by Practitioner",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Appointment?practitioner={{practitionerId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Appointment"
+       ],
+       "query": [
+        {
+         "key": "practitioner",
+         "value": "{{practitionerId}}"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Appointment by Status",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Appointment?status=booked",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Appointment"
+       ],
+       "query": [
+        {
+         "key": "status",
+         "value": "booked"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Appointment by Date",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Appointment?date=ge2024-06-20&date=le2024-06-21",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Appointment"
+       ],
+       "query": [
+        {
+         "key": "date",
+         "value": "ge2024-06-20"
+        },
+        {
+         "key": "date",
+         "value": "le2024-06-21"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Delete Appointment",
+     "request": {
+      "method": "DELETE",
+      "header": [],
+      "url": {
+       "raw": "{{baseUrl}}/Appointment/{{appointmentId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Appointment",
+        "{{appointmentId}}"
+       ]
+      }
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Server / Metadata",
+   "item": [
+    {
+     "name": "Server Capability Statement",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/metadata",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "metadata"
+       ]
+      }
+     },
+     "response": []
+    }
+   ]
+  },
+  {
+   "name": "Vitals (Observation)",
+   "item": [
+    {
+     "name": "Create Heart Rate",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"8867-4\",\n        \"display\": \"Heart rate\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 78,\n    \"unit\": \"beats/minute\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"/min\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create Blood Pressure",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"85354-9\",\n        \"display\": \"Blood pressure panel\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"component\": [\n    {\n      \"code\": {\n        \"coding\": [\n          {\n            \"system\": \"http://loinc.org\",\n            \"code\": \"8480-6\",\n            \"display\": \"Systolic BP\"\n          }\n        ]\n      },\n      \"valueQuantity\": {\n        \"value\": 120,\n        \"unit\": \"mmHg\",\n        \"system\": \"http://unitsofmeasure.org\",\n        \"code\": \"mm[Hg]\"\n      }\n    },\n    {\n      \"code\": {\n        \"coding\": [\n          {\n            \"system\": \"http://loinc.org\",\n            \"code\": \"8462-4\",\n            \"display\": \"Diastolic BP\"\n          }\n        ]\n      },\n      \"valueQuantity\": {\n        \"value\": 80,\n        \"unit\": \"mmHg\",\n        \"system\": \"http://unitsofmeasure.org\",\n        \"code\": \"mm[Hg]\"\n      }\n    }\n  ]\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create Temperature",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"8310-5\",\n        \"display\": \"Body temperature\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 37.0,\n    \"unit\": \"C\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"Cel\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create Respiratory Rate",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"9279-1\",\n        \"display\": \"Respiratory rate\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 18,\n    \"unit\": \"breaths/min\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"/min\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create SpO2",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"59408-5\",\n        \"display\": \"Oxygen saturation\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 98,\n    \"unit\": \"%\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"%\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create Weight",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"29463-7\",\n        \"display\": \"Body weight\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 70,\n    \"unit\": \"kg\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"kg\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create Height",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"8302-2\",\n        \"display\": \"Body height\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 170,\n    \"unit\": \"cm\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"cm\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create BMI",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"39156-5\",\n        \"display\": \"BMI\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 24.2,\n    \"unit\": \"kg/m2\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"kg/m2\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Create Blood Glucose",
+     "request": {
+      "method": "POST",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"2339-0\",\n        \"display\": \"Blood glucose\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T10:30:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 110,\n    \"unit\": \"mg/dL\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"mg/dL\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get Vital by ID",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation/{{observationId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation",
+        "{{observationId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Update Vital",
+     "request": {
+      "method": "PUT",
+      "header": [
+       {
+        "key": "Content-Type",
+        "value": "application/fhir+json"
+       },
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "body": {
+       "mode": "raw",
+       "raw": "{\n  \"resourceType\": \"Observation\",\n  \"id\": \"{{observationId}}\",\n  \"status\": \"final\",\n  \"category\": [\n    {\n      \"coding\": [\n        {\n          \"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\",\n          \"code\": \"vital-signs\",\n          \"display\": \"Vital Signs\"\n        }\n      ]\n    }\n  ],\n  \"code\": {\n    \"coding\": [\n      {\n        \"system\": \"http://loinc.org\",\n        \"code\": \"8867-4\",\n        \"display\": \"Heart rate\"\n      }\n    ]\n  },\n  \"subject\": {\n    \"reference\": \"Patient/{{patientId}}\"\n  },\n  \"effectiveDateTime\": \"2026-06-17T11:00:00+05:30\",\n  \"valueQuantity\": {\n    \"value\": 82,\n    \"unit\": \"beats/minute\",\n    \"system\": \"http://unitsofmeasure.org\",\n    \"code\": \"/min\"\n  }\n}",
+       "options": {
+        "raw": {
+         "language": "json"
+        }
+       }
+      },
+      "url": {
+       "raw": "{{baseUrl}}/Observation/{{observationId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation",
+        "{{observationId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Delete Vital",
+     "request": {
+      "method": "DELETE",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation/{{observationId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation",
+        "{{observationId}}"
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Get All Vitals of Patient",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Heart Rate",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=8867-4",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "8867-4"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Blood Pressure",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=85354-9",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "85354-9"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Temperature",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=8310-5",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "8310-5"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Respiratory Rate",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=9279-1",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "9279-1"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search SpO2",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=59408-5",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "59408-5"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Weight",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=29463-7",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "29463-7"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Height",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=8302-2",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "8302-2"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search BMI",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=39156-5",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "39156-5"
+        }
+       ]
+      }
+     },
+     "response": []
+    },
+    {
+     "name": "Search Blood Glucose",
+     "request": {
+      "method": "GET",
+      "header": [
+       {
+        "key": "Accept",
+        "value": "application/fhir+json"
+       }
+      ],
+      "url": {
+       "raw": "{{baseUrl}}/Observation?patient={{patientId}}&code=2339-0",
+       "host": [
+        "{{baseUrl}}"
+       ],
+       "path": [
+        "Observation"
+       ],
+       "query": [
+        {
+         "key": "patient",
+         "value": "{{patientId}}"
+        },
+        {
+         "key": "code",
+         "value": "2339-0"
+        }
+       ]
+      }
+     },
+     "response": []
+    }
+   ]
+  }
+ ],
+ "variable": [
+  {
+   "key": "serverUrl",
+   "value": "http://localhost:8085",
+   "type": "string"
+  },
+  {
+   "key": "baseUrl",
+   "value": "http://localhost:8085/fhir",
+   "type": "string"
+  },
+  {
+   "key": "patientId",
+   "value": "1",
+   "type": "string"
+  },
+  {
+   "key": "practitionerId",
+   "value": "1",
+   "type": "string"
+  },
+  {
+   "key": "encounterId",
+   "value": "1",
+   "type": "string"
+  },
+  {
+   "key": "appointmentId",
+   "value": "1",
+   "type": "string"
+  },
+  {
+   "key": "token",
+   "value": "",
+   "type": "string"
+  }
+ ],
+ "auth": {
+  "type": "bearer",
+  "bearer": [
+   {
+    "key": "token",
+    "value": "{{token}}",
+    "type": "string"
+   }
+  ]
+ }
+}

@@ -9,8 +9,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: "admin"
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.postgresql.Driver"
       HIBERNATE_DIALECT: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect
+      # --- Simple Bearer-token auth (see AUTHENTICATION.md) ---
+      HAPI_AUTH_ENABLED: "true"
+      HAPI_AUTH_USERNAME: "admin"
+      HAPI_AUTH_PASSWORD: "admin123"        # change me in production
+      HAPI_AUTH_TOKEN_TTL: "3600"           # token lifetime in seconds (0 = never expires)
+    # App listens on 8085 inside the container (server.port in application.yaml),
+    # so map host 8085 -> container 8085.
     ports:
-      - "8085:8080"
+      - "8085:8085"
     # Uncomment to enable periodic health checks.
     # Can also be run manually: docker exec hapi-fhir-jpaserver-start java -cp /app HealthCheck
     # healthcheck:

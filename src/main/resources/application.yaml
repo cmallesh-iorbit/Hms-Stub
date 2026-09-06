@@ -5,7 +5,7 @@ server:
   # Uncomment to serve FHIR under a non-default context path (e.g., /example/path/fhir)
   # servlet:
   #   context-path: /example/path
-  port: 8080
+  port: 8085
   tomcat:
     # allow | as a separator in URLs
     relaxed-query-chars: "|"
@@ -175,6 +175,19 @@ spring:
 # HAPI FHIR — grouped by domain
 # -------------------------------------------------------------------------------------
 hapi:
+
+  # -------------------------------------------------------------------------------
+  # Simple Bearer-token authentication (no OAuth2 / JWT / Keycloak).
+  # Obtain a token via POST /auth/login, then send: Authorization: Bearer <token>
+  # All /fhir/** endpoints (incl. /fhir/metadata) require a token; the web tester UI,
+  # Swagger and /actuator/health stay public. Override credentials via env vars.
+  # -------------------------------------------------------------------------------
+  auth:
+    enabled: true
+    username: ${HAPI_AUTH_USERNAME:admin}
+    password: ${HAPI_AUTH_PASSWORD:admin123}
+    token-validity-seconds: ${HAPI_AUTH_TOKEN_TTL:3600}   # 0 = never expires
+
   fhir:
 
     # -------------------------------------------------------------------------------
@@ -502,7 +515,7 @@ hapi:
     tester:
       home:
         name: Local Tester
-        server_address: 'http://localhost:8080/fhir'
+        server_address: 'http://localhost:8085/fhir'
         refuse_to_fetch_third_party_urls: false
         fhir_version: R4
 

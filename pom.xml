@@ -375,6 +375,13 @@
             <version>${spring_boot_version}</version>
         </dependency>
 
+        <!-- Simple Bearer-token authentication for FHIR + /auth endpoints -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>${spring_boot_version}</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/io.micrometer/micrometer-core -->
         <dependency>
             <groupId>io.micrometer</groupId>
