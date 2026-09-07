@@ -520,3 +520,225 @@ code {
 .picker__chosen-title {
   font-weight: 550;
 }
+
+/* --- result modal -------------------------------------------------------- */
+
+.modal__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(10, 14, 20, 0.55);
+  backdrop-filter: blur(2px);
+  animation: modal-fade 0.14s ease-out;
+}
+
+.modal {
+  width: 100%;
+  max-width: 500px;
+  max-height: min(88vh, 720px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-rise 0.16s ease-out;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal__backdrop,
+  .modal {
+    animation: none;
+  }
+}
+
+.modal__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal__icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.modal__icon--success {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+}
+
+.modal__icon--error {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
+}
+
+.modal__heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.modal__title {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.modal__subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.modal__close {
+  flex: none;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.15rem;
+}
+
+.modal__close:hover {
+  color: var(--text);
+}
+
+.modal__body {
+  padding: 1.1rem 1.25rem;
+  overflow-y: auto;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 0.7rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+/* the big appointment id */
+.modal__ref {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 1rem;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: 6px;
+}
+
+.modal__ref-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--success-text);
+}
+
+.modal__ref-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.3rem;
+  font-weight: 650;
+  color: var(--success-text);
+  user-select: all;
+}
+
+.modal__reason-label {
+  margin: 0 0 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.modal__reason {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: 6px;
+  color: var(--danger-text);
+  overflow-wrap: anywhere;
+}
+
+.modal__hint {
+  margin: 0.85rem 0 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+/* --- detail list --------------------------------------------------------- */
+
+.detail-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-list__row {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 0.85rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-list__row:last-child {
+  border-bottom: none;
+}
+
+.detail-list__label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.detail-list__value {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.detail-list__note {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+@media (max-width: 460px) {
+  .detail-list__row {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}

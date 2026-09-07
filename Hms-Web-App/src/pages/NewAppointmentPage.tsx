@@ -1,10 +1,11 @@
 import { useCallback, useMemo, useState, type FormEvent } from 'react'
 import { createAppointment, searchPatients, searchPractitioners } from '../api/fhir'
-import { UnauthorizedError } from '../api/client'
+import { ApiError, UnauthorizedError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { Alert } from '../components/Alert'
 import { FormField } from '../components/FormField'
 import { ResourcePicker, type PickerItem } from '../components/ResourcePicker'
+import { ResultDialog, type SubmitResult } from '../components/ResultDialog'
 import {
   APPOINTMENT_STATUSES,
   APPOINTMENT_TYPES,
@@ -56,8 +57,7 @@ export function NewAppointmentPage() {
   const [comment, setComment] = useState('')
 
   const [errors, setErrors] = useState<FormErrors>({})
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [createdId, setCreatedId] = useState<string | null>(null)
+  const [result, setResult] = useState<SubmitResult | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const pastWarning = isInPast(date, time)
@@ -101,8 +101,7 @@ export function NewAppointmentPage() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
-    setSubmitError(null)
-    setCreatedId(null)
+    setResult(null)
 
     if (!validate() || !patient || !practitioner) return
 
@@ -126,12 +125,17 @@ export function NewAppointmentPage() {
           podId,
         }),
       )
-      setCreatedId(created.id ?? '(id not returned)')
+      setResult({ kind: 'success', appointment: created })
     } catch (err) {
       // A dead session is already being handled globally -- the app is redirecting
-      // to /login, so showing an error here would flash and disappear.
+      // to /login, so a dialog here would flash and disappear.
       if (err instanceof UnauthorizedError) return
-      setSubmitError(err instanceof Error ? err.message : 'Could not create the appointment.')
+
+      setResult({
+        kind: 'error',
+        message: err instanceof Error ? err.message : 'Could not create the appointment.',
+        status: err instanceof ApiError ? err.status : undefined,
+      })
     } finally {
       setSubmitting(false)
     }
@@ -139,8 +143,7 @@ export function NewAppointmentPage() {
 
   /** Clear the clinical details but keep the date -- the usual case is several bookings in a row. */
   function createAnother() {
-    setCreatedId(null)
-    setSubmitError(null)
+    setResult(null)
     setPatient(null)
     setPractitioner(null)
     setTime(nextHalfHour())
@@ -183,22 +186,12 @@ export function NewAppointmentPage() {
           </p>
         </div>
 
-        {createdId && (
-          <Alert kind="success">
-            <strong>Appointment created.</strong> Reference <code>{createdId}</code>
-            {slotSummary && <> · {slotSummary}</>}
-            <div className="alert__actions">
-              <button type="button" className="btn btn--primary btn--sm" onClick={createAnother}>
-                Create another
-              </button>
-            </div>
-          </Alert>
-        )}
-
-        {submitError && (
-          <Alert kind="error" onDismiss={() => setSubmitError(null)}>
-            {submitError}
-          </Alert>
+        {result && (
+          <ResultDialog
+            result={result}
+            onClose={() => setResult(null)}
+            onCreateAnother={createAnother}
+          />
         )}
 
         <form className="card form" onSubmit={onSubmit} noValidate>

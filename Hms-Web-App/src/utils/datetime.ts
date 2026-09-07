@@ -61,6 +61,44 @@ export function describeSlot(date: string, time: string, minutes: number): strin
   return `${day}, ${pad(start.getHours())}:${pad(start.getMinutes())} - ${pad(end.getHours())}:${pad(end.getMinutes())}`
 }
 
+/**
+ * Format the `start`/`end` the SERVER echoed back, e.g.
+ * "Tue 8 Sep 2026, 09:00 – 09:30 (+05:30)".
+ *
+ * Reads the wall-clock straight out of the ISO string rather than going through
+ * `Date`+`toLocaleString`: the offset is already baked into the value, so re-rendering
+ * it in the viewer's timezone would show a different time than was booked.
+ */
+export function formatInstantRange(startIso?: string, endIso?: string): string {
+  const start = splitInstant(startIso)
+  if (!start) return ''
+
+  const [y, m, d] = start.date.split('-').map(Number)
+  const day = new Date(y, m - 1, d).toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
+  const end = splitInstant(endIso)
+  const range = end ? `${start.time} – ${end.time}` : start.time
+  const zone = start.offset ? ` (${start.offset})` : ''
+
+  return `${day}, ${range}${zone}`
+}
+
+function splitInstant(
+  iso?: string,
+): { date: string; time: string; offset: string } | null {
+  if (!iso) return null
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2})?(?:\.\d+)?(Z|[+-]\d{2}:\d{2})?/.exec(
+    iso,
+  )
+  if (!match) return null
+  return { date: match[1], time: match[2], offset: match[3] ?? '' }
+}
+
 function parseLocal(date: string, time: string): Date {
   const [y, m, d] = date.split('-').map(Number)
   const [hh, mm] = time.split(':').map(Number)
